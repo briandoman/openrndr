@@ -3,8 +3,10 @@ import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.loadFont
 import org.openrndr.draw.loadImage
 import org.openrndr.draw.tint
+import java.util.*
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.random.Random
 
 val COLS = 8
 val ROWS = 4
@@ -24,19 +26,38 @@ var delays = listOf(1.0, 2.0, 4.0, 8.0)
 var counter = 0
 var i = 0
 
+var delayMap = mutableMapOf<Int, Boolean>()
 var frameMap = mutableMapOf<Int, ColorRGBa>()
 //var delay = False
 
 fun main() = application {
     configure {
-        width = COLS * TILE.toInt()
-        height = ROWS * TILE.toInt()
+        width = COLS * TILE
+        height = ROWS * TILE
         title = "Panel Squares"
     }
 
+    // Build Delay Map
+
+    for (row in 0..ROWS){
+        for (col in 0..COLS){
+            //assign randomness to a bool
+            if (Random.nextDouble() <= 0.4) {
+                delayMap.put(i, true)
+                println("storing delayMap index : " + i.toString() + " : 1")
+            } else {
+                delayMap.put(i, false)
+                println("storing delayMap index : " + i.toString() + " : 0")
+            }
+
+        }
+
+        }
+
+
     program {
-        val image = loadImage("data/images/pm5544.png")
-        val font = loadFont("data/fonts/default.otf", 64.0)
+        //val image = loadImage("data/images/pm5544.png")
+        //val font = loadFont("data/fonts/default.otf", 64.0)
         rndColor = pallete_a.random()
 
         fun drawNewTile(row: Int, column: Int): ColorRGBa {
@@ -49,6 +70,21 @@ fun main() = application {
         fun redrawTile(row: Int, column: Int, color: ColorRGBa){
             drawer.fill = color
             drawer.rectangle(column.toDouble() * TILE, row.toDouble() * TILE, TILE.toDouble(), TILE.toDouble())
+        }
+
+        fun drawFrameWithDelay(frameMap: MutableMap<Int, ColorRGBa>, delayMap: MutableMap<Int, Boolean>){
+            i = 0
+            for (row in 0..ROWS){
+                for (col in 0..COLS){
+                    if (delayMap.get(i)==true){
+                        tileColor = frameMap.getValue(i)
+                        redrawTile(row, col, tileColor)
+                        frameMap.get(i)
+                    }
+
+                    i += 1
+                }
+            }
         }
 
         fun redrawFrame(frameMap: MutableMap<Int, ColorRGBa>){
@@ -71,7 +107,7 @@ fun main() = application {
                 for (col in 0..COLS){
                     rndColor = drawNewTile(row, col)
                     frameMap.put(i, rndColor)
-                    println("\tStoring Map : " + i.toString() + " : " + rndColor)
+                    //println("\tStoring Map : " + i.toString() + " : " + rndColor)
                     i += 1
                 }
             }
