@@ -6,11 +6,14 @@ import org.openrndr.extra.compositor.*
 import org.openrndr.extra.fx.blend.Add
 //import org.openrndr.extra.fx.blend.Normal
 import kotlin.math.cos
+import TileVars.TILE_SIZE
+import TileVars.COLUMNS
+import TileVars.ROWS
 
 
-val NUM_COLS = 8
-val NUM_ROWS = 4
-val TILE_SIZE = 176
+//val NUM_COLS = 8
+//val NUM_ROWS = 4
+//val TILE_SIZE = 176
 
 val color_A = ColorRGBa.fromHex("#191A19")
 val color_B = ColorRGBa.fromHex("#1E5128")
@@ -32,8 +35,8 @@ var pageMap_FG = mutableMapOf<Int, ColorRGBa>()
 
 fun main() = application {
     configure {
-        width = NUM_COLS * TILE_SIZE
-        height = NUM_ROWS * TILE_SIZE
+        width = COLUMNS * TILE_SIZE
+        height = ROWS * TILE_SIZE
         title = "Panel Squares"
     }
 
@@ -41,8 +44,8 @@ fun main() = application {
 
         fun buildRefreshMap_BG(): MutableMap<Int, Int> {
             p = 0
-            for (row in 0..NUM_ROWS){
-                for (col in 0..NUM_COLS){
+            for (row in 0..ROWS){
+                for (col in 0..COLUMNS){
                     refreshMap_BG.put(p, delayList.random())
                     println(p.toString() + " : " + refreshMap_BG.get(p)  )
                     p += 1
@@ -53,8 +56,8 @@ fun main() = application {
 
         fun buildRefreshMap_FG(): MutableMap<Int, Int> {
             p = 0
-            for (row in 0..NUM_ROWS){
-                for (col in 0..NUM_COLS){
+            for (row in 0..ROWS){
+                for (col in 0..COLUMNS){
                     refreshMap_FG.put(p, delayList.random())
                     println(p.toString() + " : " + refreshMap_FG.get(p)  )
                     p += 1
@@ -79,8 +82,8 @@ fun main() = application {
 
         fun drawPageRect(refreshMap: MutableMap<Int, Int>, pageMap_BG: MutableMap<Int, ColorRGBa>): MutableMap<Int, ColorRGBa>{
             p = 0
-            for (row in 0..NUM_ROWS) {
-                for (col in 0..NUM_COLS) {
+            for (row in 0..ROWS) {
+                for (col in 0..COLUMNS) {
                     //refreshFactor = refreshMap.get(i)!!
                     if (frameCount % (48 * (refreshMap.get(p)!!)) == 0) {
                         // Get random color
@@ -101,8 +104,8 @@ fun main() = application {
 
         fun drawPageCirc(refreshMap: MutableMap<Int, Int>, frameMap_FG: MutableMap<Int, ColorRGBa>): MutableMap<Int, ColorRGBa>{
             p = 0
-            for (row in 0..NUM_ROWS) {
-                for (col in 0..NUM_COLS) {
+            for (row in 0..ROWS) {
+                for (col in 0..COLUMNS) {
                     //refreshFactor = refreshMap.get(i)!!
                     if (frameCount % (48 * (refreshMap.get(p)!!)) == 0) {
                         // Get random color
@@ -124,8 +127,8 @@ fun main() = application {
         fun drawInitialFrame_BG(): MutableMap<Int, ColorRGBa> {
             pageMap_BG.clear()
             p=0
-            for (row in 0..NUM_ROWS){
-                for (col in 0..NUM_COLS){
+            for (row in 0..ROWS){
+                for (col in 0..COLUMNS){
                     panelColor = drawTileRect(row, col, palette_A.random())
                     pageMap_BG.put(p, panelColor)
                     p += 1
@@ -137,8 +140,8 @@ fun main() = application {
         fun drawInitialFrame_FG(): MutableMap<Int, ColorRGBa> {
             pageMap_FG.clear()
             p=0
-            for (row in 0..NUM_ROWS){
-                for (col in 0..NUM_COLS){
+            for (row in 0..ROWS){
+                for (col in 0..COLUMNS){
                     panelColor = drawTileCirc(row, col, palette_A.random())
                     pageMap_FG.put(p, panelColor)
                     p += 1
