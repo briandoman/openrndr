@@ -11,10 +11,10 @@ val color_C = ColorRGBa.fromHex("#4E9F3D")
 val color_D = ColorRGBa.fromHex("#D8E9A8")
 
 val palette_A = listOf(color_A, color_B, color_C, color_D)
-var tileColor = ColorRGBa.BLUE
-val delayList = listOf(1, 2, 4, 8)
+var panelColor = ColorRGBa.BLUE
+val delayList = listOf(1, 2, 8, 32)
 
-var i = 0
+var p = 0
 
 var refreshMap = mutableMapOf<Int, Int>()
 var pageMap = mutableMapOf<Int, ColorRGBa>()
@@ -30,12 +30,12 @@ fun main() = application {
     program {
 
         fun buildRefreshMap(): MutableMap<Int, Int> {
-            i = 0
+            p = 0
             for (row in 0..NUM_ROWS){
                 for (col in 0..NUM_COLS){
-                    refreshMap.put(i, delayList.random())
-                    println(i.toString() + " : " + refreshMap.get(i)  )
-                    i += 1
+                    refreshMap.put(p, delayList.random())
+                    println(p.toString() + " : " + refreshMap.get(p)  )
+                    p += 1
                 }
             }
             return refreshMap
@@ -43,27 +43,28 @@ fun main() = application {
 
         fun drawTile(row: Int, column: Int, tileColor: ColorRGBa): ColorRGBa {
             drawer.fill = tileColor
-            drawer.rectangle(column.toDouble() * TILE_SIZE, row.toDouble() * TILE_SIZE, TILE_SIZE.toDouble(), TILE_SIZE.toDouble())
+            //drawer.rectangle(column.toDouble() * TILE_SIZE, row.toDouble() * TILE_SIZE, TILE_SIZE.toDouble(), TILE_SIZE.toDouble())
+            drawer.circle(column.toDouble() * TILE_SIZE, row.toDouble() * TILE_SIZE, TILE_SIZE.toDouble()/2)
             return tileColor
         }
 
         fun drawPage(refreshMap: MutableMap<Int, Int>, frameMap: MutableMap<Int, ColorRGBa>): MutableMap<Int, ColorRGBa>{
-            i = 0
+            p = 0
             for (row in 0..NUM_ROWS) {
                 for (col in 0..NUM_COLS) {
                     //refreshFactor = refreshMap.get(i)!!
-                    if (frameCount % (60 * (refreshMap.get(i)!!)) == 0) {
+                    if (frameCount % (48 * (refreshMap.get(p)!!)) == 0) {
                         // Get random color
                         // Update frame map
                         // draw new tile
                         rndColor = palette_A.random()
-                        frameMap.put(i, rndColor)
+                        frameMap.put(p, rndColor)
                         drawTile(row, col, rndColor)
                     } else {
                         // draw tile
-                        drawTile(row, col, frameMap.getValue(i))
+                        drawTile(row, col, frameMap.getValue(p))
                     }
-                    i += 1
+                    p += 1
                 }
             }
             return frameMap
@@ -71,12 +72,12 @@ fun main() = application {
 
         fun drawInitialFrame(): MutableMap<Int, ColorRGBa> {
             pageMap.clear()
-            i=0
+            p=0
             for (row in 0..NUM_ROWS){
                 for (col in 0..NUM_COLS){
-                    tileColor = drawTile(row, col, palette_A.random())
-                    pageMap.put(i, tileColor)
-                    i += 1
+                    panelColor = drawTile(row, col, palette_A.random())
+                    pageMap.put(p, panelColor)
+                    p += 1
                 }
             }
             return pageMap
