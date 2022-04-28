@@ -1,5 +1,12 @@
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
+import org.openrndr.extra.fx.blur.ApproximateGaussianBlur
+
+import org.openrndr.extra.compositor.*
+import org.openrndr.extra.fx.blend.Add
+//import org.openrndr.extra.fx.blend.Normal
+import kotlin.math.cos
+
 
 val NUM_COLS = 8
 val NUM_ROWS = 4
@@ -83,11 +90,40 @@ fun main() = application {
             return pageMap
         }
 
+        val composite = compose {
+            draw {
+                //drawer.fill, etc.
+                //drawer.stroke, etc
+                //drawer.rectangle, etc
+                pageMap = drawPage(refreshMap, pageMap)
+
+            }
+
+            layer {
+                blend(Add()) {
+                    clip = true
+                }
+                draw {
+                    drawer.fill = ColorRGBa.PINK
+                    drawer.stroke = null
+                    drawer.circle(width / 2.0, height / 2.0 + cos(seconds * 2) * 100.0, 100.0)
+
+                }
+                post(ApproximateGaussianBlur()) {
+                    window = 25
+                    sigma = cos(seconds) * 10.0 + 10.01
+
+                }
+            }
+        }
+
+
         refreshMap = buildRefreshMap()
         pageMap = drawInitialFrame()
 
         extend {
-            pageMap = drawPage(refreshMap, pageMap)
+            //pageMap = drawPage(refreshMap, pageMap)
+            composite.draw(drawer)
         }
     }
 }
