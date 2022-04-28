@@ -23,8 +23,11 @@ val delayList = listOf(1, 2, 8, 32)
 
 var p = 0
 
-var refreshMap = mutableMapOf<Int, Int>()
-var pageMap = mutableMapOf<Int, ColorRGBa>()
+var refreshMap_BG = mutableMapOf<Int, Int>()
+var refreshMap_FG = mutableMapOf<Int, Int>()
+var pageMap_BG = mutableMapOf<Int, ColorRGBa>()
+var pageMap_FG = mutableMapOf<Int, ColorRGBa>()
+
 
 
 fun main() = application {
@@ -36,26 +39,45 @@ fun main() = application {
 
     program {
 
-        fun buildRefreshMap(): MutableMap<Int, Int> {
+        fun buildRefreshMap_BG(): MutableMap<Int, Int> {
             p = 0
             for (row in 0..NUM_ROWS){
                 for (col in 0..NUM_COLS){
-                    refreshMap.put(p, delayList.random())
-                    println(p.toString() + " : " + refreshMap.get(p)  )
+                    refreshMap_BG.put(p, delayList.random())
+                    println(p.toString() + " : " + refreshMap_BG.get(p)  )
                     p += 1
                 }
             }
-            return refreshMap
+            return refreshMap_BG
         }
 
-        fun drawTile(row: Int, column: Int, tileColor: ColorRGBa): ColorRGBa {
+        fun buildRefreshMap_FG(): MutableMap<Int, Int> {
+            p = 0
+            for (row in 0..NUM_ROWS){
+                for (col in 0..NUM_COLS){
+                    refreshMap_FG.put(p, delayList.random())
+                    println(p.toString() + " : " + refreshMap_FG.get(p)  )
+                    p += 1
+                }
+            }
+            return refreshMap_FG
+        }
+
+        fun drawTileRect(row: Int, column: Int, tileColor: ColorRGBa): ColorRGBa {
+            drawer.fill = tileColor
+            drawer.rectangle(column.toDouble() * TILE_SIZE, row.toDouble() * TILE_SIZE, TILE_SIZE.toDouble(), TILE_SIZE.toDouble())
+            //drawer.circle(column.toDouble() * TILE_SIZE, row.toDouble() * TILE_SIZE, TILE_SIZE.toDouble()/2)
+            return tileColor
+        }
+
+        fun drawTileCirc(row: Int, column: Int, tileColor: ColorRGBa): ColorRGBa {
             drawer.fill = tileColor
             //drawer.rectangle(column.toDouble() * TILE_SIZE, row.toDouble() * TILE_SIZE, TILE_SIZE.toDouble(), TILE_SIZE.toDouble())
             drawer.circle(column.toDouble() * TILE_SIZE, row.toDouble() * TILE_SIZE, TILE_SIZE.toDouble()/2)
             return tileColor
         }
 
-        fun drawPage(refreshMap: MutableMap<Int, Int>, frameMap: MutableMap<Int, ColorRGBa>): MutableMap<Int, ColorRGBa>{
+        fun drawPageRect(refreshMap: MutableMap<Int, Int>, pageMap_BG: MutableMap<Int, ColorRGBa>): MutableMap<Int, ColorRGBa>{
             p = 0
             for (row in 0..NUM_ROWS) {
                 for (col in 0..NUM_COLS) {
@@ -65,38 +87,70 @@ fun main() = application {
                         // Update frame map
                         // draw new tile
                         rndColor = palette_A.random()
-                        frameMap.put(p, rndColor)
-                        drawTile(row, col, rndColor)
+                        pageMap_BG.put(p, rndColor)
+                        drawTileRect(row, col, rndColor)
                     } else {
                         // draw tile
-                        drawTile(row, col, frameMap.getValue(p))
+                        drawTileRect(row, col, pageMap_BG.getValue(p))
                     }
                     p += 1
                 }
             }
-            return frameMap
+            return pageMap_BG
         }
 
-        fun drawInitialFrame(): MutableMap<Int, ColorRGBa> {
-            pageMap.clear()
-            p=0
-            for (row in 0..NUM_ROWS){
-                for (col in 0..NUM_COLS){
-                    panelColor = drawTile(row, col, palette_A.random())
-                    pageMap.put(p, panelColor)
+        fun drawPageCirc(refreshMap: MutableMap<Int, Int>, frameMap_FG: MutableMap<Int, ColorRGBa>): MutableMap<Int, ColorRGBa>{
+            p = 0
+            for (row in 0..NUM_ROWS) {
+                for (col in 0..NUM_COLS) {
+                    //refreshFactor = refreshMap.get(i)!!
+                    if (frameCount % (48 * (refreshMap.get(p)!!)) == 0) {
+                        // Get random color
+                        // Update frame map
+                        // draw new tile
+                        rndColor = palette_A.random()
+                        frameMap_FG.put(p, rndColor)
+                        drawTileCirc(row, col, rndColor)
+                    } else {
+                        // draw tile
+                        drawTileCirc(row, col, frameMap_FG.getValue(p))
+                    }
                     p += 1
                 }
             }
-            return pageMap
+            return frameMap_FG
+        }
+
+        fun drawInitialFrame_BG(): MutableMap<Int, ColorRGBa> {
+            pageMap_BG.clear()
+            p=0
+            for (row in 0..NUM_ROWS){
+                for (col in 0..NUM_COLS){
+                    panelColor = drawTileRect(row, col, palette_A.random())
+                    pageMap_BG.put(p, panelColor)
+                    p += 1
+                }
+            }
+            return pageMap_BG
+        }
+
+        fun drawInitialFrame_FG(): MutableMap<Int, ColorRGBa> {
+            pageMap_FG.clear()
+            p=0
+            for (row in 0..NUM_ROWS){
+                for (col in 0..NUM_COLS){
+                    panelColor = drawTileCirc(row, col, palette_A.random())
+                    pageMap_FG.put(p, panelColor)
+                    p += 1
+                }
+            }
+            return pageMap_FG
         }
 
         val composite = compose {
             draw {
-                //drawer.fill, etc.
-                //drawer.stroke, etc
-                //drawer.rectangle, etc
-                pageMap = drawPage(refreshMap, pageMap)
-
+                //pageMap_BG = drawPageRect(refreshMap_BG, pageMap_BG)
+                pageMap_FG = drawPageCirc(refreshMap_FG, pageMap_FG)
             }
 
             layer {
@@ -104,9 +158,10 @@ fun main() = application {
                     clip = true
                 }
                 draw {
-                    drawer.fill = ColorRGBa.PINK
-                    drawer.stroke = null
-                    drawer.circle(width / 2.0, height / 2.0 + cos(seconds * 2) * 100.0, 100.0)
+                    //drawer.fill = ColorRGBa.PINK
+                    //drawer.stroke = null
+                    pageMap_FG = drawPageCirc(refreshMap_FG, pageMap_FG)
+                    //drawer.circle(width / 2.0, height / 2.0 + cos(seconds * 2) * 100.0, 100.0)
 
                 }
                 post(ApproximateGaussianBlur()) {
@@ -118,8 +173,10 @@ fun main() = application {
         }
 
 
-        refreshMap = buildRefreshMap()
-        pageMap = drawInitialFrame()
+        refreshMap_BG = buildRefreshMap_BG()
+        refreshMap_FG = buildRefreshMap_FG()
+        pageMap_BG = drawInitialFrame_BG()
+        pageMap_FG = drawInitialFrame_FG()
 
         extend {
             //pageMap = drawPage(refreshMap, pageMap)
