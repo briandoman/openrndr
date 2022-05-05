@@ -1,5 +1,6 @@
 import Palettes.palette_A
 import Palettes.palette_B
+import Palettes.palettes
 import TileVars.COLUMNS
 import TileVars.ROWS
 import TileVars.TILE_SIZE
@@ -29,8 +30,6 @@ var pageMap_FG = mutableMapOf<Int, ColorRGBa>()
 var pageMap_L1 = mutableMapOf<Int, ColorRGBa>()
 var pageMap_L2 = mutableMapOf<Int, ColorRGBa>()
 //var pageMap = mutableMapOf<Int, ColorRGBa>()
-
-
 
 fun main() = application {
     configure {
@@ -65,15 +64,15 @@ fun main() = application {
             return colorMap
         }
 
-        fun drawLayer(refreshMap: MutableMap<Int, Int>, colorMap: MutableMap<Int, ColorRGBa>, scale: Double, opacity: Double){
-            //placeholder
-            println("Temp")
-        }
-
-        fun drawTileRect(row: Int, column: Int, tileColor: ColorRGBa, scale: Double, opacity: Double): ColorRGBa {
-            coords = makeCoordinates(row, column, 0.0, 0.0, )
+        fun drawTileRect(row: Int,
+                         column: Int,
+                         tileColor: ColorRGBa,
+                         scale: Double,
+                         opacity: Double,
+                         pos_x: Double,
+                         pos_y: Double): ColorRGBa {
+            coords = makeCoordinates(row, column, pos_x, pos_y )
             drawer.fill = tileColor.opacify(opacity)
-            //drawer.rectangle(column.toDouble() * TILE_SIZE, row.toDouble() * TILE_SIZE, TILE_SIZE*scale, TILE_SIZE*scale)
             drawer.rectangle(coords[0], coords[1], TILE_SIZE*scale, TILE_SIZE*scale)
             return tileColor
         }
@@ -84,31 +83,38 @@ fun main() = application {
             return tileColor
         }
 
-        fun drawTileCircScaled(row: Int, column: Int, tileColor: ColorRGBa, scale: Double, opacity: Double, center: Boolean): ColorRGBa {
-            drawer.fill = tileColor
-            if (center) {
-                drawer.circle(column.toDouble() * (TILE_SIZE) + TILE_SIZE/2, row.toDouble() * (TILE_SIZE) + TILE_SIZE/2, TILE_SIZE.toDouble() * scale)
-                return tileColor
-            }
-                else {
-                    drawer.circle(column.toDouble() * (TILE_SIZE), row.toDouble() * (TILE_SIZE), TILE_SIZE.toDouble() * scale)
-                    return tileColor
-            }
+        fun drawTileCirc(row: Int,
+                         column: Int,
+                         tileColor: ColorRGBa,
+                         scale: Double,
+                         opacity: Double,
+                         pos_x: Double,
+                         pos_y: Double): ColorRGBa {
+            coords = makeCoordinates(row, column, pos_x, pos_y )
+            drawer.fill = tileColor.opacify(opacity)
+            drawer.circle(coords[0], coords[1], TILE_SIZE.toDouble() * scale)
+            return tileColor
         }
 
-        fun drawPageRect(refreshMap: MutableMap<Int, Int>, colorMap: MutableMap<Int, ColorRGBa>, scale: Double, opacity: Double): MutableMap<Int, ColorRGBa>{
+        fun drawPageRect(refreshMap: MutableMap<Int, Int>,
+                         colorMap: MutableMap<Int, ColorRGBa>,
+                         scale: Double,
+                         opacity: Double,
+                         pos_x: Double,
+                         pos_y: Double,
+                         palette: List<List<ColorRGBa>>): MutableMap<Int, ColorRGBa>{
             p = 0
             for (row in 0..ROWS) {
                 for (col in 0..COLUMNS) {
                     if (frameCount % (8 * (refreshMap.get(p)!!)) == 0) {
                         // Based on refreshMap this is the case where
                         // we generate a New color, then store it
-                        rndColor = palette_A.random()
+                        rndColor = palettes.random().random()
                         colorMap.put(p, rndColor)
                         // draw Rectangle
-                        drawTileRect(row, col, rndColor, scale, opacity)
+                        drawTileRect(row, col, rndColor, scale, opacity, pos_x, pos_y)
                     } else {
-                        drawTileRect(row, col, pageMap_BG.getValue(p), scale, opacity)
+                        drawTileRect(row, col, pageMap_BG.getValue(p), scale, opacity, pos_x, pos_y)
                     }
                     p += 1
                 }
@@ -141,7 +147,13 @@ fun main() = application {
             return pageMap
         }
 
-        fun drawPageCircScaled(refreshMap: MutableMap<Int, Int>, pageMap: MutableMap<Int, ColorRGBa>, scale: Double, opacity: Double, palette: List<ColorRGBa>): MutableMap<Int, ColorRGBa>{
+        fun drawPageCirc(refreshMap: MutableMap<Int, Int>,
+                         colorMap: MutableMap<Int, ColorRGBa>,
+                         scale: Double,
+                         opacity: Double,
+                         pos_x: Double,
+                         pos_y: Double,
+                         palette: List<List<ColorRGBa>>): MutableMap<Int, ColorRGBa>{
             p = 0
             for (row in 0..ROWS) {
                 for (col in 0..COLUMNS) {
@@ -150,14 +162,14 @@ fun main() = application {
                         // Get random color
                         // Update frame map
                         // draw new
-                        rndColor = palette.random()
+                        rndColor = palettes.random().random()
                         //println("PageCirc, NEW DRAW | " + frameCount + " | " + (refreshMap.get(p)) + " | " + rndColor.toString() + " | "  )
-                        drawTileCircScaled(row, col, rndColor, scale, opacity, true)
+                        drawTileCirc(row, col, rndColor, scale, opacity, pos_x, pos_y)
                         pageMap.put(p, rndColor)
 
                     } else {
                         // draw tile
-                        drawTileCircScaled(row, col, pageMap.getValue(p), scale, opacity, true)
+                        drawTileCirc(row, col, pageMap.getValue(p), scale, opacity, pos_x, pos_y)
                         //println("\tPageCirc, REDRAW | " + frameCount + " | " + (refreshMap.get(p)) + " | " + rndColor.toString() + " | "  )
                     }
                     p += 1
@@ -177,32 +189,30 @@ fun main() = application {
             pageMap_L1 = buildColorMap(pageMap_L1)
             pageMap_L2 = buildColorMap(pageMap_L2)
             draw {
-                //pageMap_FG = drawPageCirc(refreshMap_FG, pageMap_FG)
-                pageMap_BG = drawPageRect(refreshMap_BG, pageMap_BG, 1.0, 1.0)
-                //pageMap_L1 = drawPageRect(refreshMap_L1, pageMap_L1, 0.75, 0.5)
+                pageMap_BG = drawPageRect(refreshMap_BG, pageMap_BG, 1.0, 1.0, 0.0, 0.0, palettes)
             }
             layer {
                 blend(Normal()) {
                     clip = true
                 }
                 draw {
-                    //pageMap_FG = drawPageRect(refreshMap_FG, pageMap_BG, 0.25, 0.5)
-                    pageMap_FG = drawPageCircScaled(refreshMap_FG, pageMap_FG, 0.4, 0.85, palette_A)
+                    println("value: " + (frameCount % 60)/60.0 )
+                    pageMap_FG = drawPageCirc(refreshMap_FG, pageMap_FG, 0.4, 0.85, (frameCount % 60)/60.0, 0.0, palettes)
                 }
 
                 post(GaussianBloom()) {
                     window = 25
-                    sigma = cos(seconds /10) + 8.01
+                    sigma = cos(seconds /10) + 10.01
                     println(cos(seconds /10) + 1.01)
 
                 }
             }
             layer {
                 blend(Multiply()){
-                    //clip = true
+                    clip = true
                 }
                 draw {
-                    pageMap_L2 = drawPageCircScaled(refreshMap_FG, pageMap_FG, 0.2, 0.85, palette_B)
+                    pageMap_L2 = drawPageCirc(refreshMap_FG, pageMap_FG, 0.2, 0.85, (frameCount % 120)/120.0, 0.0, palettes)
                     //drawer.image(tileCardChecker)
                 }
             }

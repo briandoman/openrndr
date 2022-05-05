@@ -14,3 +14,5 @@ val color_H = ColorRGBa.fromHex("EEEEEE")
 
 val palette_A = listOf(color_A, color_B, color_C, color_D)
 val palette_B = listOf(color_E, color_F, color_G, color_H)
+
+val palettes = listOf(palette_A, palette_B)
