@@ -15,7 +15,6 @@ fun main() = application {
     configure {
         width = COLUMNS * TILE_SIZE
         height = ROWS * TILE_SIZE
-
     }
 
     program {

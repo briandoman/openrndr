@@ -5,16 +5,14 @@ import TileVars.TILE_SIZE
 import TileVars.COLUMNS
 import TileVars.ROWS
 
-val colorA = ColorRGBa.fromHex("#191A19")
-val colorB = ColorRGBa.fromHex("#1E5128")
-val colorC = ColorRGBa.fromHex("#4E9F3D")
-val colorD = ColorRGBa.fromHex("#D8E9A8")
+import Palettes.palette_A
+import Palettes.palette_B
+import Palettes.color_B
 
-val pallete_a = listOf(color_A, color_B, color_C, color_D)
+
 var rndColor = color_B
 var tileColor = ColorRGBa.BLUE
 var delays = listOf(1.0, 2.0, 4.0, 8.0)
-
 
 var counter = 0
 var ii = 0
